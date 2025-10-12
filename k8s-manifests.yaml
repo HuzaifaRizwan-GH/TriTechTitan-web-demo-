@@ -17,7 +17,8 @@ spec:
       containers:
       - name: tritechtitan-web
         # You WILL update this line later with your Azure Container Registry (ACR) login server.
-        image: youracr.azurecr.io/tritechtitan:latest 
+        image: tritechtitan-web:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 80 
 
