@@ -10,6 +10,11 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  dockerImageName: 'tritechtitan-web'
+  dockerHubUsername: 'yourdockerhubusername'  # Replace with your Docker Hub username
+
+pool:
+  name: Default  # This tells it to use YOUR self-hosted agent
 
 stages:
 - stage: Build
@@ -17,13 +22,30 @@ stages:
   jobs:
   - job: Build
     displayName: Build
-    pool:
-      vmImage: ubuntu-latest
     steps:
     - task: Docker@2
       displayName: Build an image
       inputs:
         command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile.txt'
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'  # Fixed: removed .txt
+        repository: '$(dockerHubUsername)/$(dockerImageName)'
         tags: |
           $(tag)
+          latest
+
+- stage: Deploy
+  displayName: Deploy to Kubernetes
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Deploy
+    displayName: Deploy to Minikube
+    steps:
+    - task: CmdLine@2
+      displayName: Deploy to Kubernetes
+      inputs:
+        script: |
+          kubectl apply -f $(Build.SourcesDirectory)/k8s-manifests/deployment.yaml
+          kubectl apply -f $(Build.SourcesDirectory)/k8s-manifests/service.yaml
+          kubectl get pods
+          kubectl get services
