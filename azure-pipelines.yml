@@ -11,10 +11,11 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
   dockerImageName: 'tritechtitan-web'
-  dockerHubUsername: 'yourdockerhubusername'  # Replace with your Docker Hub username
+  # CRITICAL: Replace 'yourdockerhubusername' with your actual Docker Hub username
+  dockerHubUsername: 'HuzaifaRizwan' 
 
 pool:
-  name: Default  # This tells it to use YOUR self-hosted agent
+  name: Default # This tells it to use YOUR self-hosted agent
 
 stages:
 - stage: Build
@@ -27,7 +28,7 @@ stages:
       displayName: Build an image
       inputs:
         command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'  # Fixed: removed .txt
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile' 
         repository: '$(dockerHubUsername)/$(dockerImageName)'
         tags: |
           $(tag)
@@ -44,8 +45,11 @@ stages:
     - task: CmdLine@2
       displayName: Deploy to Kubernetes
       inputs:
+        # ⚠️ CRITICAL FIX: The path must be corrected. I have replaced 
+        # 'k8s-manifests' with 'manifests' below as an example.
+        # CHANGE 'manifests' if your folder has a different name!
         script: |
-          kubectl apply -f $(Build.SourcesDirectory)/k8s-manifests/deployment.yaml
-          kubectl apply -f $(Build.SourcesDirectory)/k8s-manifests/service.yaml
+          kubectl apply -f $(Build.SourcesDirectory)/manifests/deployment.yaml 
+          kubectl apply -f $(Build.SourcesDirectory)/manifests/service.yaml     
           kubectl get pods
           kubectl get services
